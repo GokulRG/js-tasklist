@@ -7,6 +7,9 @@ const filter = document.querySelector('#filter');
 const taskInput = document.querySelector('#task');
 
 const loadEventListeners = () => {
+
+    //DOM Loaded Event - Fetch Tasks from storage
+    document.addEventListener('DOMContentLoaded', fetchTasks);
     //Add task event
     form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -15,6 +18,8 @@ const loadEventListeners = () => {
             return;
         }
 
+        //Store task
+        storeTask(taskInput.value);
         //Create an li element to put inside the tasklist above
         const li = document.createElement('li');
         //Add class
@@ -40,6 +45,9 @@ const loadEventListeners = () => {
         event.preventDefault();
         if (event.target.parentElement.classList.contains('delete-item')) {
             if (confirm('Are you sure you want to delete this task?')) {
+                const storedTasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+                storedTasks.splice(storedTasks.indexOf(event.target.parentElement.parentElement.innerText), 1);
+                localStorage.setItem('tasks', JSON.stringify(storedTasks));
                 event.target.parentElement.parentElement.remove();
             }
         }
@@ -50,6 +58,8 @@ const loadEventListeners = () => {
         event.preventDefault();
         const tasks = document.querySelectorAll('li');
         if (confirm('Are you sure you want to clear all your tasks?')) {
+            //localStorage.setItem('tasks', ''); //This clears just our local Storage Variable // You can also do localStorage.clear.. which clears everything
+            localStorage.clear();
             tasks.forEach(taskItem => {
                 taskItem.remove();
             });
@@ -79,13 +89,33 @@ const loadEventListeners = () => {
 
 };
 
-//Local Storage
-// const tasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
-// tasks.push(taskInput.value);
-// localStorage.setItem('tasks', JSON.stringify(tasks));
-// taskInput.value = '';
+const storeTask = (taskString) => {
+    const tasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+    tasks.push(taskString);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+};
+
+const fetchTasks = () => {
+    const tasks = localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+
+    tasks.forEach(taskString => {
+        const li = document.createElement('li');
+        //Add class
+        li.className = 'collection-item';
+        //Create text node and append to li, now the text also appears
+        li.appendChild(document.createTextNode(taskString));
+        //Create delete link
+        const link = document.createElement('a');
+        //Add class to that
+        link.className = 'delete-item secondary-content';
+        //Add icon html
+        link.innerHTML = '<i class="fa fa-remove"></i>';
+        //Append the link to li
+        li.appendChild(link);
+        //Append said li to ul
+        taskList.appendChild(li);
+    }); 
+};
 
 //Load all event listeners
 loadEventListeners();
-
-
